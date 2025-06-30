@@ -2,7 +2,7 @@
 import { registerSW } from 'virtual:pwa-register'
 
 // Your VAPID public key
-const VAPID_PUBLIC_KEY = 'BGKhelZGl2FoIElN18I5FoNE-NhMa749rUgFRtmGryWdvF8vq7xH0W60NXzqrVYNrGvdZ4ldBkDYYdBxfkjjeYw'
+const VAPID_PUBLIC_KEY = 'BNajTcd4-YDohjXE8Zfk9KQ7Gpke346nTTUX6bVFOtrUCfw7vTVEmcLK1onMxF_9RCHmLDaYC7SiV_7XCTfYOUE'
 
 // Convert VAPID key to Uint8Array
 function urlB64ToUint8Array(base64String: string): Uint8Array {

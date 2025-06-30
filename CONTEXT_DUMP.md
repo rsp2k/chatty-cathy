@@ -16,10 +16,11 @@
 - ✅ PWA icons and manifest
 - ✅ Production-ready configuration
 
-### 🔑 **VAPID Keys (Already Generated)**
+### 🔑 **VAPID Keys**
 ```
-Public: BGKhelZGl2FoIElN18I5FoNE-NhMa749rUgFRtmGryWdvF8vq7xH0W60NXzqrVYNrGvdZ4ldBkDYYdBxfkjjeYw
-Private: E2R7CIRtjTLDMsxGpWKUe30aprMVcdxrbowqiFVEWqs
+VAPID keys are generated and stored in .env file
+Run `npm run generate-keys` to create your own keys
+🚨 Keys in this example were compromised and regenerated
 ```
 
 ### 📁 **Project Structure**

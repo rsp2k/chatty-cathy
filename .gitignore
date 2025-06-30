@@ -9,10 +9,16 @@ dist/
 dev-dist/
 .astro/
 
-# Environment files
+# Environment files - NEVER COMMIT THESE!
+.env
+.env.*
+!.env.example
 .env.local
 .env.production
 .env.development
+
+# VAPID keys (sensitive)
+vapid-keys.json
 
 # IDE
 .vscode/
