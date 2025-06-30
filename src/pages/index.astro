@@ -1,0 +1,78 @@
+---
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro';
+import { NotificationManager } from '../components/NotificationManager';
+---
+
+<Layout title="Cool PWA with Push Notifications">
+  <main class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Hero Section -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+          🚀 Your Cool PWA
+        </h1>
+        <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          A modern Progressive Web App with self-hosted push notifications. 
+          The cool kids way to stay connected with your users.
+        </p>
+      </div>
+
+      <!-- Notification Manager -->
+      <NotificationManager client:load />
+
+      <!-- Features -->
+      <div class="mt-16 grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+          <div class="text-3xl mb-4">⚡</div>
+          <h3 class="font-semibold mb-2">Lightning Fast</h3>
+          <p class="text-gray-600">Built with Astro for optimal performance and loading speed.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+          <div class="text-3xl mb-4">🔔</div>
+          <h3 class="font-semibold mb-2">Real Push Notifications</h3>
+          <p class="text-gray-600">Web push that works offline using modern VAPID standards.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+          <div class="text-3xl mb-4">🏠</div>
+          <h3 class="font-semibold mb-2">Self-Hosted</h3>
+          <p class="text-gray-600">Complete control over your notification infrastructure.</p>
+        </div>
+      </div>
+
+      <!-- API Examples -->
+      <div class="mt-16 bg-white rounded-lg p-6 shadow-sm">
+        <h2 class="text-2xl font-semibold mb-4">🔧 Developer Examples</h2>
+        <div class="space-y-4">
+          <div>
+            <h3 class="font-medium mb-2">Send notification via curl:</h3>
+            <pre class="bg-gray-100 p-3 rounded text-sm overflow-x-auto"><code>curl -X POST http://localhost:4321/api/send-notification \
+  -H "Content-Type: application/json" \
+  -d '&#123;"title":"Hello!","body":"Message from API"&#125;'</code></pre>
+          </div>
+          
+          <div>
+            <h3 class="font-medium mb-2">Send from JavaScript:</h3>
+            <pre class="bg-gray-100 p-3 rounded text-sm overflow-x-auto"><code>fetch('/api/send-notification', &#123;
+  method: 'POST',
+  headers: &#123; 'Content-Type': 'application/json' &#125;,
+  body: JSON.stringify(&#123;
+    title: 'New Message',
+    body: 'You have a new notification!',
+    icon: '/pwa-192x192.png'
+  &#125;)
+&#125;)</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .container {
+    max-width: 1200px;
+  }
+</style>

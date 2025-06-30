@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  pwa-app:
+    build: .
+    ports:
+      - "4321:4321"
+    volumes:
+      # Mount source code for live reloading
+      - .:/app
+      - /app/node_modules  # Prevent overwriting node_modules
+    environment:
+      - NODE_ENV=development
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - VAPID_EMAIL=${VAPID_EMAIL}
+    env_file:
+      - .env
+    command: npm run dev -- --host 0.0.0.0
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    networks:
+      - pwa-network
+
+  # Optional: Add a Redis service for production-ready subscriber storage
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - pwa-network
+
+networks:
+  pwa-network:
+    driver: bridge
+
+# volumes:
+#   redis_data:
