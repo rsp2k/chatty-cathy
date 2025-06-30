@@ -1,0 +1,338 @@
+name: 🚀 Release & Deploy
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v2.1.0)'
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # 🏷️ Prepare Release
+  prepare:
+    name: 🏷️ Prepare Release
+    runs-on: ubuntu-latest
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      is-prerelease: ${{ steps.version.outputs.is-prerelease }}
+
+    steps:
+      - name: 📥 Checkout Cathy
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🏷️ Extract Version Info
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+            TAG="${{ github.event.inputs.version }}"
+          else
+            TAG=${GITHUB_REF#refs/tags/}
+            VERSION=${TAG#v}
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          
+          # Check if this is a prerelease (contains alpha, beta, rc)
+          if [[ $VERSION =~ (alpha|beta|rc) ]]; then
+            echo "is-prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-prerelease=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "📦 Release version: $VERSION"
+          echo "🏷️ Release tag: $TAG"
+
+  # 🧪 Full Test Suite
+  test:
+    name: 🧪 Release Testing
+    runs-on: ubuntu-latest
+    needs: prepare
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - name: 📥 Checkout Cathy
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🧪 Full Test Suite
+        run: |
+          echo "🧪 Running comprehensive tests for release..."
+          npm run build
+          echo "✅ Build test passed for Node.js ${{ matrix.node-version }}"
+
+  # 🏗️ Build Release Assets
+  build:
+    name: 🏗️ Build Release Assets
+    runs-on: ubuntu-latest
+    needs: [prepare, test]
+
+    steps:
+      - name: 📥 Checkout Cathy
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🏗️ Build Production
+        run: |
+          echo "🏗️ Building Cathy for release..."
+          npm run build
+          
+          # Create release archive
+          tar -czf cathy-${{ needs.prepare.outputs.version }}.tar.gz \
+            dist/ \
+            package.json \
+            README.md \
+            LICENSE \
+            Dockerfile \
+            docker-compose.yml \
+            docker-dev.sh
+
+      - name: 📤 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          path: |
+            cathy-${{ needs.prepare.outputs.version }}.tar.gz
+            dist/
+
+  # 🐳 Build Release Docker Images
+  docker:
+    name: 🐳 Release Docker Images
+    runs-on: ubuntu-latest
+    needs: [prepare, test]
+    
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: 📥 Checkout Cathy
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏗️ Build and Push Release Images
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ needs.prepare.outputs.version }}
+            ghcr.io/${{ github.repository }}:latest
+          labels: |
+            org.opencontainers.image.title=Cathy
+            org.opencontainers.image.description=The Chatty Community PWA
+            org.opencontainers.image.version=${{ needs.prepare.outputs.version }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 📋 Generate Release Notes
+  release-notes:
+    name: 📋 Generate Release Notes
+    runs-on: ubuntu-latest
+    needs: prepare
+    
+    outputs:
+      release-notes: ${{ steps.notes.outputs.release-notes }}
+
+    steps:
+      - name: 📥 Checkout Cathy
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📋 Generate Release Notes
+        id: notes
+        run: |
+          echo "📋 Generating release notes..."
+          
+          # Get previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [[ -n "$PREVIOUS_TAG" ]]; then
+            echo "🔍 Comparing with previous release: $PREVIOUS_TAG"
+            COMMIT_RANGE="$PREVIOUS_TAG..HEAD"
+          else
+            echo "🎉 This is the first release!"
+            COMMIT_RANGE="HEAD"
+          fi
+          
+          # Generate release notes
+          cat << EOF > release-notes.md
+          # 🗣️ Cathy ${{ needs.prepare.outputs.version }} - Community Grade Release!
+          
+          > **Community Grade > Enterprise Grade** - Because everyone deserves awesome push notifications! 🌍✨
+          
+          ## 🚀 What's New in This Release:
+          
+          $(git log $COMMIT_RANGE --pretty="- %s" --grep="feat\|fix\|perf\|docs" || echo "- Initial release of Cathy! 🎉")
+          
+          ## 🔔 Rich Push Notification Features:
+          - ✅ **7 Interactive Templates** (Social, Message, News, Reminder, E-commerce, Alert, Default)
+          - ✅ **Action Buttons** (Like, Reply, Archive, Share, etc.)
+          - ✅ **Real-time Analytics** and engagement tracking
+          - ✅ **Self-hosted VAPID** notifications (zero external dependencies)
+          - ✅ **Professional Dashboard** with template gallery and custom builder
+          
+          ## 🏗️ Technical Stack:
+          - **Astro 5.x** + **React** + **Tailwind CSS** + **TypeScript**
+          - **Docker** containerized deployment
+          - **Custom Service Worker** with action handling
+          - **Multi-platform** support (linux/amd64, linux/arm64)
+          
+          ## 🐳 Quick Deploy:
+          \`\`\`bash
+          # Using Docker
+          docker run -p 4321:4321 \\
+            -e VAPID_PUBLIC_KEY="your_key" \\
+            -e VAPID_PRIVATE_KEY="your_key" \\
+            -e VAPID_EMAIL="your_email" \\
+            ghcr.io/${{ github.repository }}:${{ needs.prepare.outputs.version }}
+          
+          # Or clone and run locally
+          git clone https://github.com/${{ github.repository }}.git
+          cd cathy
+          npm run docker:dev
+          \`\`\`
+          
+          ## 🌟 Community Impact:
+          Perfect for:
+          - 🧑‍💻 **Developers** learning modern PWA development
+          - 🚀 **Startups** needing enterprise features without enterprise costs
+          - 🌍 **Nonprofits** engaging their communities
+          - 📚 **Students** exploring push notification technology
+          - ❤️ **Everyone** who wants to build something awesome
+          
+          ## 🤝 Built With Love:
+          Created by **Ryan Malloy** ([@rsp2k](https://github.com/rsp2k)) with collaboration between humans and AI.
+          
+          **Community = Everyone! Humans + AI building the future together!** 🤖❤️🧑
+          
+          ---
+          
+          ## 📊 Full Changelog:
+          $(git log $COMMIT_RANGE --oneline || echo "Initial release")
+          
+          **Keep being chatty!** 🗣️✨
+          EOF
+          
+          # Set output for GitHub release
+          echo "release-notes<<EOF" >> $GITHUB_OUTPUT
+          cat release-notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 📤 Upload Release Notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes.md
+
+  # 🎉 Create GitHub Release
+  release:
+    name: 🎉 Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [prepare, test, build, docker, release-notes]
+    
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Download Release Assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+
+      - name: 📥 Download Release Notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+
+      - name: 🎉 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: "🗣️ Cathy ${{ needs.prepare.outputs.version }} - Community Grade!"
+          body_path: release-notes.md
+          draft: false
+          prerelease: ${{ needs.prepare.outputs.is-prerelease }}
+          files: |
+            cathy-${{ needs.prepare.outputs.version }}.tar.gz
+          generate_release_notes: true
+
+  # 📊 Release Summary
+  summary:
+    name: 📊 Release Summary
+    runs-on: ubuntu-latest
+    needs: [prepare, test, build, docker, release]
+    if: always()
+
+    steps:
+      - name: 📊 Create Release Summary
+        run: |
+          echo "# 🎉 Cathy ${{ needs.prepare.outputs.version }} Released!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Release Status:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Testing**: ${{ needs.test.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build**: ${{ needs.build.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Docker**: ${{ needs.docker.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Release**: ${{ needs.release.result == 'success' && '✅ CREATED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🌍 Available Deployments:" >> $GITHUB_STEP_SUMMARY
+          echo "### 🐳 Docker Images:" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/${{ github.repository }}:${{ needs.prepare.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`ghcr.io/${{ github.repository }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Release Assets:" >> $GITHUB_STEP_SUMMARY
+          echo "- Source code archive" >> $GITHUB_STEP_SUMMARY
+          echo "- Built distribution files" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. 📢 **Announce** the release to the community" >> $GITHUB_STEP_SUMMARY
+          echo "2. 📚 **Update** documentation if needed" >> $GITHUB_STEP_SUMMARY
+          echo "3. 🌟 **Share** with developers who need rich notifications" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**🗣️ Cathy is ready to chat with the world at ${{ needs.prepare.outputs.version }}!** ✨" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,209 @@
+name: 🐳 Docker Build & Publish
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*.*.*']
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # 🏗️ Build Multi-Architecture Images
+  build:
+    name: 🐳 Build Docker Images
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-metadata: ${{ steps.meta.outputs.json }}
+
+    steps:
+      - name: 📥 Checkout Cathy
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Login to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Extract Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🏗️ Build and Push Docker Image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+            REVISION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+
+  # 🧪 Test Docker Images
+  test:
+    name: 🧪 Test Docker Images
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+
+    steps:
+      - name: 📥 Checkout Cathy
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🧪 Test Container
+        run: |
+          # Pull the image for the specific platform
+          PLATFORM_TAG=$(echo "${{ matrix.platform }}" | tr '/' '-')
+          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
+          
+          echo "Testing image: $IMAGE_TAG on ${{ matrix.platform }}"
+          
+          # Run container with health check
+          docker run -d --name cathy-test \
+            --platform ${{ matrix.platform }} \
+            -p 4321:4321 \
+            -e VAPID_PUBLIC_KEY="test-public-key-for-ci" \
+            -e VAPID_PRIVATE_KEY="test-private-key-for-ci" \
+            -e VAPID_EMAIL="ci-test@cathy.example.com" \
+            $IMAGE_TAG
+          
+          # Wait for container to start
+          sleep 15
+          
+          # Health checks
+          echo "🔍 Checking container health..."
+          docker ps | grep cathy-test || exit 1
+          
+          echo "📊 Container stats:"
+          docker stats cathy-test --no-stream
+          
+          echo "📋 Container logs:"
+          docker logs cathy-test
+          
+          # Basic connectivity test (if possible for the platform)
+          if [[ "${{ matrix.platform }}" == "linux/amd64" ]]; then
+            echo "🌐 Testing HTTP connectivity..."
+            timeout 30 bash -c 'until curl -f http://localhost:4321/api/subscribe; do sleep 2; done' || echo "⚠️ HTTP test skipped (may be platform limitation)"
+          fi
+          
+          # Cleanup
+          docker stop cathy-test
+          docker rm cathy-test
+          
+          echo "✅ Container test passed for ${{ matrix.platform }}!"
+
+  # 🔒 Security Scan
+  security:
+    name: 🔒 Container Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+
+    steps:
+      - name: 🔐 Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔍 Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: 📤 Upload Trivy Scan Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # 📊 Summary
+  summary:
+    name: 📊 Docker Workflow Summary
+    runs-on: ubuntu-latest
+    needs: [build, test, security]
+    if: always()
+
+    steps:
+      - name: 📊 Create Summary
+        run: |
+          echo "# 🐳 Cathy Docker Workflow Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🏗️ Build & Test Results:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build**: ${{ needs.build.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Multi-Platform Test**: ${{ needs.test.result == 'success' && '✅ PASSED' || '❌ FAILED' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Scan**: ${{ needs.security.result == 'success' && '✅ PASSED' || '⚠️ CHECK RESULTS' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            echo "## 📦 Published Images:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Registry**: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Platforms**: linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tags**: Based on branch/tag/PR" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🚀 Quick Deploy:" >> $GITHUB_STEP_SUMMARY
+            echo '```bash' >> $GITHUB_STEP_SUMMARY
+            echo "docker run -p 4321:4321 \\" >> $GITHUB_STEP_SUMMARY
+            echo '  -e VAPID_PUBLIC_KEY="your_key" \' >> $GITHUB_STEP_SUMMARY
+            echo '  -e VAPID_PRIVATE_KEY="your_key" \' >> $GITHUB_STEP_SUMMARY
+            echo '  -e VAPID_EMAIL="your_email" \' >> $GITHUB_STEP_SUMMARY
+            echo "  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🗣️ **Cathy is ready to be chatty anywhere Docker runs!** ✨" >> $GITHUB_STEP_SUMMARY

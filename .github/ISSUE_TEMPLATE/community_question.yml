@@ -1,0 +1,174 @@
+name: ❓ Community Question
+description: Need help with Cathy? Have ideas to discuss? The community is here for you!
+title: "❓ [Question]: "
+labels: ["question", "community-help", "discussion"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # ❓ Community Question
+        
+        Welcome to the Cathy community! **Everyone is welcome here!** 🌍✨
+        
+        Whether you're stuck, curious, or just want to chat about push notifications, we're here to help each other out.
+
+  - type: dropdown
+    id: question-type
+    attributes:
+      label: 🎯 Question Type
+      description: What kind of help do you need?
+      options:
+        - 🚀 Getting Started (installation, first steps, setup)
+        - 🔧 Technical Help (configuration, troubleshooting, how-to)
+        - 💡 Best Practices (recommendations, patterns, optimization)
+        - 🎨 Design & UX (templates, styling, user experience)
+        - 📊 Analytics & Data (understanding metrics, tracking)
+        - 🌐 Integration (APIs, webhooks, external services)
+        - 🐳 Deployment (Docker, hosting, production)
+        - 📚 Learning (understanding concepts, tutorials)
+        - 🤝 Contributing (how to help, development setup)
+        - 💭 General Discussion (ideas, feedback, community chat)
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ Your Question
+      description: What would you like to know or discuss?
+      placeholder: |
+        Example: "I'm trying to set up Cathy for my nonprofit's volunteer coordination app. What's the best notification template for sending reminders about upcoming volunteer shifts? Also, how can I track engagement to see which volunteers are most responsive to notifications?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 🌍 Context & Background
+      description: Tell us about your situation, project, or use case
+      placeholder: |
+        Example:
+        - Building a community app for local volunteers
+        - Using React/Node.js stack 
+        - About 200 active users
+        - Need to send shift reminders and emergency notifications
+        - Want to respect users' time and not spam them
+    validations:
+      required: false
+
+  - type: textarea
+    id: what-tried
+    attributes:
+      label: 🔍 What You've Tried
+      description: Have you tried anything already? What worked/didn't work?
+      placeholder: |
+        - Followed the Quick Start in README
+        - Tried the "reminder" template but actions don't seem right
+        - Looked at the API docs but confused about custom actions
+        - Docker setup works great though!
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🛠️ Environment (if relevant)
+      description: Technical details about your setup (if this is a technical question)
+      placeholder: |
+        - OS: macOS 14.1
+        - Browser: Chrome 121
+        - Cathy version: v2.0.0
+        - Deployment: Docker
+
+  - type: checkboxes
+    id: community-spirit
+    attributes:
+      label: 🤝 Community Spirit
+      description: How you'd like to engage with the community
+      options:
+        - label: 💬 I'm happy to help others with similar questions
+        - label: 📚 I'd like to learn from more experienced community members
+        - label: 🔄 I can share my solution once I figure it out
+        - label: 🌟 I'm interested in contributing to Cathy in the future
+        - label: 🗣️ I just want to chat about push notifications and PWAs!
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: ⏰ Urgency Level
+      description: How urgent is this question?
+      options:
+        - 🌱 Just curious (learning, exploring, no rush)
+        - 📅 Planning ahead (for a future project)
+        - 🔧 Working on it now (current project, could use help)
+        - ⚡ Pretty urgent (stuck and need to move forward)
+        - 🚨 Emergency (production issue, very time-sensitive)
+      default: 0
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 📎 Additional Information
+      description: Anything else that might be helpful?
+      placeholder: |
+        - Links to your project (if public)
+        - Screenshots or examples
+        - Error messages
+        - Related questions or issues
+        - Resources you've already found helpful
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🌟 Community Support Network
+        
+        **You're not alone!** The Cathy community includes:
+        
+        ### 🧑‍💻 Developers
+        - Experienced with PWAs and push notifications
+        - Happy to share code examples and best practices
+        - Always learning new things too!
+        
+        ### 🎨 Designers & UX Folks  
+        - Great at thinking through user experience
+        - Can help with notification design and timing
+        - Love making apps more user-friendly
+        
+        ### 🚀 Project Builders
+        - Using Cathy for real projects
+        - Can share practical experience and lessons learned
+        - Always excited to see what others are building
+        
+        ### 🤖 AI Assistants
+        - Available 24/7 to help debug and explain
+        - Great at analyzing code and suggesting solutions
+        - Love collaborating with humans on technical challenges
+        
+        ### 📚 Learners & Students
+        - Asking great questions that help everyone learn
+        - Fresh perspectives on problems
+        - Enthusiastic about new technology
+        
+        ---
+        
+        ## 💡 Getting the Best Help
+        
+        ### ✅ To get great answers:
+        - Be specific about what you're trying to achieve
+        - Share relevant code or config (remove sensitive info!)
+        - Mention what you've already tried
+        - Include error messages or unexpected behavior
+        
+        ### 🤝 To help others:
+        - Share your experiences and solutions
+        - Ask clarifying questions
+        - Suggest resources and documentation
+        - Celebrate when someone solves their problem!
+        
+        **Community Grade = Everyone Helps Everyone!** 🌍❤️
+        
+        ---
+        
+        *Remember: There are no "dumb" questions! Every question helps improve Cathy's documentation and makes it easier for the next person.* ✨

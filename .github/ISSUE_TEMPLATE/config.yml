@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Community Discussions
+    url: https://github.com/rsp2k/cathy/discussions
+    about: Join ongoing discussions about Cathy features, best practices, and community projects
+  - name: 📚 Documentation & Guides
+    url: https://github.com/rsp2k/cathy#readme
+    about: Check out the comprehensive README with setup guides, API docs, and examples
+  - name: 🐳 Docker Quick Start
+    url: https://github.com/rsp2k/cathy/blob/main/DOCKER_GUIDE.md
+    about: Get Cathy running with Docker in minutes using our detailed Docker guide
+  - name: 🗣️ Community Chat
+    url: https://github.com/rsp2k/cathy/discussions/categories/general
+    about: Chat with other community members about projects, ideas, and collaboration
+  - name: 🚀 Show & Tell
+    url: https://github.com/rsp2k/cathy/discussions/categories/show-and-tell
+    about: Share what you've built with Cathy! Everyone loves to see community projects

@@ -1,0 +1,142 @@
+name: 🐛 Bug Report
+description: Found a bug in Cathy? Let's fix it together!
+title: "🐛 [Bug]: "
+labels: ["bug", "community-help", "triage-needed"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # 🐛 Bug Report for Cathy
+        
+        Thanks for helping make Cathy better for everyone! **Community Grade = Everyone Benefits!** 🌍✨
+        
+        Please provide as much detail as possible so we can squash this bug quickly.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Pre-submission Checklist
+      description: Please check these items before submitting
+      options:
+        - label: I've searched existing issues to make sure this bug hasn't been reported
+          required: true
+        - label: I've tried the latest version of Cathy
+          required: true
+        - label: I've checked the Docker logs if using Docker deployment
+          required: false
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: 🚀 Deployment Method
+      description: How are you running Cathy?
+      options:
+        - Docker (recommended)
+        - Local development (npm run dev)
+        - Local production build
+        - Other (please specify in description)
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 🐛 Bug Description
+      description: What's the bug? What did you expect to happen vs. what actually happened?
+      placeholder: |
+        Example: When I click "Send Social Notification", I expected to see the notification with Like/Comment/Share actions, but instead I got an error message about missing VAPID keys.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 🔄 Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Start Cathy with `npm run docker:dev`
+        2. Navigate to http://localhost:4321
+        3. Click "Enable Push Notifications"
+        4. Click "Send Social Notification" button
+        5. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Expected Behavior
+      description: What should have happened?
+      placeholder: Should have shown a notification with Like, Comment, and Share action buttons
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened?
+      placeholder: Got an error message and no notification was sent
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🌍 Environment
+      description: Tell us about your setup
+      placeholder: |
+        - OS: [e.g., macOS 14.1, Ubuntu 22.04, Windows 11]
+        - Browser: [e.g., Chrome 121, Firefox 122, Safari 17]
+        - Node.js version: [e.g., 20.11.0]
+        - Docker version: [e.g., 24.0.7] (if using Docker)
+        - Cathy version: [e.g., v2.0.0]
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 Logs & Console Output
+      description: Any relevant logs, error messages, or console output
+      placeholder: |
+        Please paste any error messages, Docker logs, or browser console output here.
+        
+        For Docker logs, use: docker-compose logs
+        For browser console: Open DevTools (F12) and check the Console tab
+      render: text
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📎 Additional Context
+      description: Screenshots, GIFs, or anything else that might help
+      placeholder: |
+        - Screenshots of the error
+        - Browser network tab screenshots
+        - Any workarounds you've found
+        - Related issues or similar problems
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🤝 Community Support
+        
+        **Everyone is welcome to help!** Whether you're:
+        - 🧑‍💻 A developer who can investigate the code
+        - 🐛 Someone who's experienced this same bug
+        - 🤖 An AI that can suggest solutions
+        - ❤️ Anyone who wants to help make Cathy better
+        
+        **Your contribution makes Cathy better for everyone!** 🌟
+        
+        ### 🚀 Want to help fix this?
+        - Comment on this issue if you can reproduce it
+        - Submit a PR if you know the solution
+        - Share any workarounds you've discovered
+        
+        **Community Grade = Everyone Benefits!** 🗣️✨

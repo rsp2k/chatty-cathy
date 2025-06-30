@@ -1,0 +1,192 @@
+name: ✨ Feature Request
+description: Got an idea to make Cathy even more awesome? Let's build it together!
+title: "✨ [Feature]: "
+labels: ["enhancement", "community-idea", "discussion"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # ✨ Feature Request for Cathy
+        
+        Amazing! You have an idea to make Cathy better! **Community Grade = Everyone Benefits!** 🌍✨
+        
+        Let's discuss your feature and see how we can build it together for the community.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Pre-submission Checklist
+      description: Please check these items before submitting
+      options:
+        - label: I've searched existing issues to make sure this feature hasn't been requested
+          required: true
+        - label: This feature would benefit the community (not just me personally)
+          required: true
+        - label: I've thought about how this fits with Cathy's "Community Grade" philosophy
+          required: true
+
+  - type: dropdown
+    id: feature-category
+    attributes:
+      label: 🎯 Feature Category
+      description: What type of feature is this?
+      options:
+        - 🔔 Notification Templates & Actions (new templates, action types)
+        - 📊 Analytics & Insights (tracking, reporting, dashboards)
+        - 🎨 User Interface & Experience (design, usability, accessibility)
+        - 🔧 API & Integration (new endpoints, webhooks, SDKs)
+        - 🌐 Internationalization (translations, localization)
+        - 🚀 Performance & Optimization (speed, efficiency, caching)
+        - 🔒 Security & Privacy (auth, encryption, compliance)
+        - 🐳 Deployment & Infrastructure (Docker, CI/CD, hosting)
+        - 📚 Documentation & Learning (guides, examples, tutorials)
+        - 🤖 AI & Automation (smart features, auto-optimization)
+        - Other (please describe)
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature-summary
+    attributes:
+      label: 🚀 Feature Summary
+      description: What's your feature idea in one sentence?
+      placeholder: "Add a 'Birthday' notification template with cake emoji and celebration actions"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: 🎯 Problem Statement
+      description: What problem does this feature solve? Who benefits?
+      placeholder: |
+        Example: Community managers and app developers need an easy way to send birthday notifications to users, but the current templates don't fit celebration scenarios. This would help:
+        - Event organizers celebrating user milestones
+        - Community apps engaging users on special days
+        - Anyone building social features with Cathy
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: How would you like this feature to work?
+      placeholder: |
+        Example: 
+        1. Add a new "birthday" template with:
+           - 🎂 Default birthday cake icon
+           - Actions: "Send Wishes", "View Profile", "Share Celebration"
+           - Special vibration pattern for celebrations
+        2. Template available via: GET /api/send-notification?template=birthday
+        3. Custom fields for age, name personalization
+        4. Integration with calendar/date APIs
+    validations:
+      required: true
+
+  - type: textarea
+    id: community-impact
+    attributes:
+      label: 🌍 Community Impact
+      description: How does this help everyone? Who benefits?
+      placeholder: |
+        - Students building social apps for school projects
+        - Nonprofits celebrating volunteer achievements  
+        - Startups adding engagement features
+        - Developers learning notification best practices
+        - Anyone who wants to make their app more personal and celebratory
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: 🔧 Technical Considerations
+      description: Any technical thoughts, challenges, or implementation ideas?
+      placeholder: |
+        - Could reuse existing template system
+        - Might need new action types for social sharing
+        - Consider timezone handling for birthday timing
+        - Should work with existing analytics
+        - Mobile vibration patterns for celebration feel
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: 📊 Implementation Complexity
+      description: How complex do you think this feature would be?
+      options:
+        - 🟢 Simple (small change, few files affected)
+        - 🟡 Medium (new components, some API changes)
+        - 🟠 Complex (major new functionality, multiple systems)
+        - 🔴 Very Complex (fundamental architecture changes)
+        - 🤷 Not sure (need community input)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: implementation-help
+    attributes:
+      label: 🤝 Implementation Help
+      description: How would you like to contribute to this feature?
+      options:
+        - label: 💻 I can help code this feature
+        - label: 🎨 I can help with design/UI
+        - label: 📚 I can help with documentation
+        - label: 🧪 I can help with testing
+        - label: 💡 I can provide feedback and ideas
+        - label: 🗣️ I can help promote this to the community
+        - label: 📊 I can help with requirements analysis
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternative Solutions
+      description: Have you considered other ways to solve this problem?
+      placeholder: |
+        - Could use existing templates with customization
+        - Could build as external integration
+        - Could be solved with better documentation
+        - Could wait for related features to be built first
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: 📋 Examples & References
+      description: Any examples, mockups, or references that illustrate your idea?
+      placeholder: |
+        - Links to similar features in other apps
+        - Mockups or sketches (even hand-drawn!)
+        - Code snippets or API examples
+        - Screenshots of desired behavior
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        
+        ## 🌟 Building Together
+        
+        **Your idea could help thousands of developers!** Here's what happens next:
+        
+        ### 🗣️ Community Discussion
+        - Other community members will comment with ideas
+        - We'll refine the feature based on feedback
+        - Core maintainers will provide technical guidance
+        
+        ### 🚀 Implementation
+        - Community members can volunteer to help build it
+        - We'll break it into manageable tasks
+        - Everyone can contribute at their skill level
+        
+        ### 🎉 Celebration
+        - When it's done, everyone celebrates together!
+        - Your contribution helps everyone who uses Cathy
+        
+        **Community Grade = Everyone's Ideas Matter!** 🤖❤️🧑
+        
+        ---
+        
+        *Remember: The best features are ones that help everyone, not just one person. Let's build something amazing together!* ✨
